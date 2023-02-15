@@ -1,5 +1,6 @@
 ﻿using CPW219_AspnetMVC_CRUD_Debugging.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
@@ -18,6 +19,7 @@ namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
             return View(await _context.Product.ToListAsync());
         }
 
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
@@ -28,7 +30,9 @@ namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _context.AddAsync(product);
+                // await _context.AddAsync(productToDelete);
+                _context.Product.Add(product);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
@@ -36,7 +40,7 @@ namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-            var product = await _context.Product.FindAsync(id);
+            Product? product = await _context.Product.FindAsync(id);
             if (product == null)
             {
                 return NotFound();
@@ -49,9 +53,10 @@ namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Update(product);
+                _context.Product.Update(product);
                 await _context.SaveChangesAsync();
 
+                TempData["Message"] = $"{product.Name} was updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
@@ -59,8 +64,7 @@ namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            var product = await _context.Product
-                .FirstOrDefaultAsync(m => m.ProductId == id);
+            Product? product = await _context.Product.FirstOrDefaultAsync(m => m.ProductId == id);
 
             if (product == null)
             {
@@ -73,9 +77,19 @@ namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Product.FindAsync(id);
-            _context.Product.Remove(product);
-            return RedirectToAction(nameof(Index));
+            Product? productToDelete = await _context.Product.FindAsync(id);
+
+            if (productToDelete != null)
+            {
+                _context.Product.Remove(productToDelete);
+                await _context.SaveChangesAsync();
+                TempData["Message"] = $"{productToDelete.Name} was deleted successfully!";
+
+                return RedirectToAction("Index");
+            }
+            TempData["Message"] = $"This product is no longer existed!";
+            return RedirectToAction("Index");
+
         }
 
         private bool ProductExists(int id)
