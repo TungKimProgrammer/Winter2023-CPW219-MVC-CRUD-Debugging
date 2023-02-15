@@ -1,5 +1,6 @@
 ﻿using CPW219_AspnetMVC_CRUD_Debugging.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
@@ -55,6 +56,7 @@ namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
                 _context.Product.Update(product);
                 await _context.SaveChangesAsync();
 
+                TempData["Message"] = $"{product.Name} was updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
