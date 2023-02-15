@@ -29,7 +29,7 @@ namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
         {
             if (ModelState.IsValid)
             {
-                // await _context.AddAsync(product);
+                // await _context.AddAsync(productToDelete);
                 _context.Product.Add(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -75,9 +75,19 @@ namespace CPW219_AspnetMVC_CRUD_Debugging.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            Product? product = await _context.Product.FindAsync(id);
-            _context.Product.Remove(product);
-            return RedirectToAction(nameof(Index));
+            Product? productToDelete = await _context.Product.FindAsync(id);
+
+            if (productToDelete != null)
+            {
+                _context.Product.Remove(productToDelete);
+                await _context.SaveChangesAsync();
+                TempData["Message"] = $"{productToDelete.Name} was deleted successfully!";
+
+                return RedirectToAction("Index");
+            }
+            TempData["Message"] = $"This product is no longer existed!";
+            return RedirectToAction("Index");
+
         }
 
         private bool ProductExists(int id)
